@@ -5,3 +5,7 @@ dev-dist
 .env.local
 .DS_Store
 *.log
+
+# Personal notes, keys, anything project-specific
+NOTES.local.md
+*.local.md
