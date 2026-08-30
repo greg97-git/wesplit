@@ -143,42 +143,37 @@ export function useAppData(session) {
 // ---------------------------------------------------------------------------
 
 /**
- * Insert an expense and its shares. The deferred constraint trigger in the
- * database rejects the whole thing if the shares do not add up, so a bad
- * split can never land even if the UI has a bug.
+ * Create or update an expense together with its shares.
+ *
+ * Both writes go through one database function on purpose. The balance
+ * trigger is deferred to the end of the transaction, and PostgREST gives the
+ * browser no way to open a transaction across two calls — so writing the
+ * expense and then the shares separately means the first one commits alone,
+ * with no shares, and the trigger rejects it. One RPC, one transaction.
  */
-export async function createExpense(expense, shares) {
-  const { data, error } = await supabase.from('expenses').insert(expense).select('id').single()
+async function saveExpense(id, expense, shares) {
+  const { data, error } = await supabase.rpc('save_expense', {
+    p_id: id,
+    p_description: expense.description,
+    p_amount_cents: expense.amount_cents,
+    p_paid_by: expense.paid_by,
+    p_category_id: expense.category_id,
+    p_spent_on: expense.spent_on,
+    p_note: expense.note,
+    p_split_mode: expense.split_mode,
+    p_recurrence: expense.recurrence,
+    p_shares: shares,
+  })
   if (error) throw error
-
-  const rows = Object.entries(shares).map(([user_id, share_cents]) => ({
-    expense_id: data.id,
-    user_id,
-    share_cents,
-  }))
-  const { error: shareError } = await supabase.from('expense_shares').insert(rows)
-  if (shareError) {
-    // Roll back by hand: no client-side transactions over PostgREST.
-    await supabase.from('expenses').delete().eq('id', data.id)
-    throw shareError
-  }
-  return data.id
+  return data
 }
 
-export async function updateExpense(id, expense, shares) {
-  const { error } = await supabase.from('expenses').update(expense).eq('id', id)
-  if (error) throw error
+export function createExpense(expense, shares) {
+  return saveExpense(null, expense, shares)
+}
 
-  const { error: delError } = await supabase.from('expense_shares').delete().eq('expense_id', id)
-  if (delError) throw delError
-
-  const rows = Object.entries(shares).map(([user_id, share_cents]) => ({
-    expense_id: id,
-    user_id,
-    share_cents,
-  }))
-  const { error: insError } = await supabase.from('expense_shares').insert(rows)
-  if (insError) throw insError
+export function updateExpense(id, expense, shares) {
+  return saveExpense(id, expense, shares)
 }
 
 /** Soft delete, so a mistap is recoverable in the SQL editor. */
