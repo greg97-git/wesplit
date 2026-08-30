@@ -129,10 +129,17 @@ declare
   allocated bigint;
   is_deleted boolean;
 begin
-  target := coalesce(
-    case when tg_table_name = 'expenses' then coalesce(new.id, old.id) end,
-    coalesce(new.expense_id, old.expense_id)
-  );
+  -- Resolve the expense id without ever referencing a field that does not
+  -- exist on this table's record, or a record that is null for this
+  -- operation. PL/pgSQL resolves record fields at runtime, so a CASE that
+  -- merely guards the reference is not enough -- the branch has to not run.
+  if tg_table_name = 'expenses' then
+    target := new.id;
+  elsif tg_op = 'DELETE' then
+    target := old.expense_id;
+  else
+    target := new.expense_id;
+  end if;
 
   select amount_cents, deleted_at is not null into total, is_deleted
     from expenses where id = target;
