@@ -127,7 +127,11 @@ Sign in on each phone with the matching email. Sofia's profile row is created th
 
 **Changing the app icon.** iOS uses `public/apple-touch-icon.png` (180x180, no transparency, square — iOS rounds the corners itself). Android and desktop use `public/icon-192.png` and `icon-512.png`, listed in the manifest block of `vite.config.js`. Replace the files, keep the names, push.
 
-iOS caches the icon hard. After deploying a new one, remove the app from the home screen and add it again — refreshing won't do it.
+iOS caches the icon hard, in two separate places. If a new icon does not show up:
+
+1. Bump the filename — `apple-touch-icon-v2.png`, `-v3`, and so on — and update the `<link rel="apple-touch-icon">` in `index.html` to match. Safari caches the touch icon by URL and ignores query strings, so a new name is the only reliable bust.
+2. Clear the site from Safari: Settings, Safari, Advanced, Website Data, find the github.io entry, swipe to delete.
+3. Remove the app from the home screen and add it again. Refreshing the page never updates an already-placed icon.
 
 **Deleting is soft.** `deleted_at` gets set, the row stays. If either of you deletes something by accident, it's recoverable in the SQL editor:
 
