@@ -29,7 +29,7 @@ Your own values are in `NOTES.local.md`, which is gitignored.
 <p>Or <a href="{{ .ConfirmationURL }}">tap here</a> on a computer.</p>
 ```
 
-`{{ .Token }}` is the 6-digit code the app asks for. This is required — without it the email has no code in it and the sign-in screen has nothing to accept. On a phone the code is the path that works; the link signs Safari in rather than the installed app.
+`{{ .Token }}` is the sign-in code the app asks for. Its length is set under Authentication, Sign In / Providers, Email, **Email OTP Length** — this project is set to 8 digits, not the usual 6. The app accepts anything from 6 to 10 digits, so either works, but if you change that setting the emails change with it. This is required — without it the email has no code in it and the sign-in screen has nothing to accept. On a phone the code is the path that works; the link signs Safari in rather than the installed app.
 
 **Turn off unwanted signups (optional but sensible).** Authentication, Providers, Email: leave Email enabled, turn off "Confirm email" only if you want fewer clicks. Magic links work either way.
 

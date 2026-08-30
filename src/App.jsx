@@ -115,11 +115,11 @@ function AuthScreen() {
 
             <input
               className="amount-input"
-              style={{ textAlign: 'center', letterSpacing: '0.32em', fontVariantNumeric: 'tabular-nums' }}
+              style={{ textAlign: 'center', letterSpacing: '0.18em', fontVariantNumeric: 'tabular-nums' }}
               inputMode="numeric"
               autoComplete="one-time-code"
-              placeholder="000000"
-              maxLength={6}
+              placeholder="Code from the email"
+              maxLength={10}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
               autoFocus
@@ -168,6 +168,10 @@ function AuthScreen() {
         )}
 
         {error && <div className="error">{error}</div>}
+
+        <div className="muted" style={{ textAlign: 'center', fontSize: 11, opacity: 0.6 }}>
+          build {__BUILD__}
+        </div>
       </div>
     </div>
   )
