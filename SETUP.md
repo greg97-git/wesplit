@@ -21,6 +21,16 @@ Never copy the **secret** key (`sb_secret_`, formerly `service_role`). It bypass
 
 Your own values are in `NOTES.local.md`, which is gitignored.
 
+**Put the sign-in code in the email.** Authentication, Emails, Templates, Magic Link. The default template only contains a link. Add the code above it so the body reads something like:
+
+```html
+<h2>Sign in to WeSplit</h2>
+<p>Your code is <strong>{{ .Token }}</strong></p>
+<p>Or <a href="{{ .ConfirmationURL }}">tap here</a> on a computer.</p>
+```
+
+`{{ .Token }}` is the 6-digit code the app asks for. This is required — without it the email has no code in it and the sign-in screen has nothing to accept. On a phone the code is the path that works; the link signs Safari in rather than the installed app.
+
 **Turn off unwanted signups (optional but sensible).** Authentication, Providers, Email: leave Email enabled, turn off "Confirm email" only if you want fewer clicks. Magic links work either way.
 
 **Set up email delivery before you test.** Supabase's built-in email service sends 2 messages per hour and is not meant for production. You will hit that limit within minutes of testing sign-in, and the emails often land in spam because they come from a shared Supabase sender.
@@ -109,7 +119,9 @@ If you name the repo something other than `wesplit`, change `base` in `vite.conf
 
 On each iPhone, open the Pages URL in **Safari** (not Chrome — only Safari can install to the home screen on iOS), tap Share, then Add to Home Screen. It opens full-screen with no browser chrome.
 
-Sign in on each phone with the matching email. Sofia's profile row is created the first time she signs in.
+Sign in on each phone with the matching email, **using the 6-digit code rather than the link**. Sofia's profile row is created the first time she signs in.
+
+Do not tap the link on a phone. A home-screen app has its own storage, separate from Safari, and there is no way to make a link open inside it — tapping it signs Safari in and leaves the installed app sitting on the login screen. Type the code instead and you stay in the app. Once signed in, that device stays signed in.
 
 **Recurring expenses.** Supabase Dashboard, Database, Extensions, search `pg_cron`, enable it. Then re-run the last block of `schema.sql` (the `do $$ ... cron.schedule ... $$` at the bottom) to register the daily job. Without this, expenses marked as repeating simply never generate copies; nothing else breaks.
 

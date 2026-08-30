@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { configured } from './supabase.js'
 import {
-  useSession, useAppData, sendMagicLink, signOut,
+  useSession, useAppData, sendMagicLink, verifyCode, signOut,
   createExpense, updateExpense, deleteExpense, createSettlement,
 } from './data.js'
 import { allocate, remainder, formatCents, parseCents } from './split.js'
@@ -65,11 +65,12 @@ function Centered({ children }) {
 
 function AuthScreen() {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
-  async function submit(e) {
+  async function requestCode(e) {
     e.preventDefault()
     setBusy(true)
     setError(null)
@@ -83,6 +84,19 @@ function AuthScreen() {
     }
   }
 
+  async function submitCode(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      await verifyCode(email, code)
+      // On success the session listener swaps this screen out; nothing to do.
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
   return (
     <div className="app">
       <div className="scroll pad" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 20 }}>
@@ -92,18 +106,48 @@ function AuthScreen() {
         </div>
 
         {sent ? (
-          <div className="center-col" style={{ gap: 10, textAlign: 'center' }}>
-            <Icon name="mail" size={32} color="var(--green)" />
-            <div style={{ fontSize: 16, fontWeight: 600 }}>Check your email</div>
-            <div className="muted small">
-              We sent a sign-in link to {email}. Open it on this phone and you'll stay signed in.
+          <form onSubmit={submitCode} className="stack">
+            <div className="center-col" style={{ gap: 8, textAlign: 'center' }}>
+              <Icon name="mail" size={30} color="var(--green)" />
+              <div style={{ fontSize: 16, fontWeight: 600 }}>Enter the code we emailed</div>
+              <div className="muted small">Sent to {email}. It expires in an hour.</div>
             </div>
-            <button className="btn ghost" style={{ marginTop: 8 }} onClick={() => setSent(false)}>
-              Use a different email
+
+            <input
+              className="amount-input"
+              style={{ textAlign: 'center', letterSpacing: '0.32em', fontVariantNumeric: 'tabular-nums' }}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="000000"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+              autoFocus
+            />
+
+            <button className="btn primary" disabled={busy || code.length < 6}>
+              {busy ? 'Signing in…' : 'Sign in'}
             </button>
-          </div>
+
+            <div className="muted small" style={{ textAlign: 'center', lineHeight: 1.5 }}>
+              The same email has a link in it. On a phone, use the code — tapping the
+              link opens Safari, which signs in the browser rather than this app.
+            </div>
+
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => {
+                setSent(false)
+                setCode('')
+                setError(null)
+              }}
+            >
+              Start over
+            </button>
+          </form>
         ) : (
-          <form onSubmit={submit} className="stack">
+          <form onSubmit={requestCode} className="stack">
             <input
               className="text-input"
               type="email"
@@ -115,10 +159,10 @@ function AuthScreen() {
               required
             />
             <button className="btn primary" disabled={busy || !email}>
-              {busy ? 'Sending…' : 'Email me a sign-in link'}
+              {busy ? 'Sending…' : 'Email me a sign-in code'}
             </button>
             <div className="muted small" style={{ textAlign: 'center' }}>
-              No password. The link signs this device in and keeps it signed in.
+              No password. Signing in once on a device keeps it signed in.
             </div>
           </form>
         )}

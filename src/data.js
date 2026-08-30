@@ -25,6 +25,25 @@ export async function sendMagicLink(email) {
   if (error) throw error
 }
 
+/**
+ * Sign in with the 6-digit code from the same email.
+ *
+ * This exists because of iOS. A home-screen PWA has its own storage, separate
+ * from Safari, and there is no way to make a link open inside the installed
+ * app. Tapping the link signs Safari in and leaves the app at the login
+ * screen. A code never leaves the app, so it works everywhere. It also
+ * survives corporate mail scanners, which pre-fetch links and can burn the
+ * single-use token before you ever tap it.
+ */
+export async function verifyCode(email, token) {
+  const { error } = await supabase.auth.verifyOtp({
+    email: email.trim().toLowerCase(),
+    token: token.trim(),
+    type: 'email',
+  })
+  if (error) throw error
+}
+
 export async function signOut() {
   await supabase.auth.signOut()
 }
