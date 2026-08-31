@@ -60,7 +60,7 @@ export function Icon({ name, size = 20, color = 'currentColor', width = 1.8, sty
 // code change; anything unrecognised falls back to a receipt.
 const categoryGlyph = {
   cart: '🛒', home: '🏠', bolt: '💡', fork: '🍽', car: '🚗', plane: '✈️',
-  paw: '🐾', heart: '💊', box: '📦', ticket: '🎟', receipt: '🧾',
+  paw: '🐾', heart: '💊', box: '📦', ticket: '🎟', receipt: '🧾', card: '💳',
 }
 
 export function CategoryTile({ icon }) {
