@@ -220,6 +220,8 @@ function Shell({ session }) {
       return <SettleScreen ctx={ctx} />
     case 'summary':
       return <SummaryScreen ctx={ctx} />
+    case 'account':
+      return <AccountScreen ctx={ctx} />
     default:
       return <HomeScreen ctx={ctx} />
   }
@@ -323,7 +325,7 @@ function HomeScreen({ ctx }) {
       <div className="tabbar">
         <button className="on"><Icon name="list" /><span>Expenses</span></button>
         <button onClick={() => setView({ name: 'summary' })}><Icon name="chart" /><span>Totals</span></button>
-        <button onClick={signOut}><Icon name="person" /><span>Account</span></button>
+        <button onClick={() => setView({ name: 'account' })}><Icon name="person" /><span>Account</span></button>
       </div>
     </div>
   )
@@ -1118,7 +1120,52 @@ function SummaryScreen({ ctx }) {
       <div className="tabbar">
         <button onClick={() => setView({ name: 'home' })}><Icon name="list" /><span>Expenses</span></button>
         <button className="on"><Icon name="chart" /><span>Totals</span></button>
-        <button onClick={signOut}><Icon name="person" /><span>Account</span></button>
+        <button onClick={() => setView({ name: 'account' })}><Icon name="person" /><span>Account</span></button>
+      </div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+
+function AccountScreen({ ctx }) {
+  const { me, other, session, setView } = ctx
+
+  return (
+    <div className="app">
+      <div className="nav">
+        <div className="nav-title" style={{ flex: 1 }}>Account</div>
+      </div>
+
+      <div className="scroll">
+        <div className="center-col" style={{ gap: 10, padding: '28px 16px' }}>
+          <Avatar person={me} size={64} />
+          <div style={{ fontSize: 19, fontWeight: 600 }}>{me.display_name}</div>
+          <div className="muted small">{session.user.email}</div>
+        </div>
+
+        {other && (
+          <div className="row">
+            <Avatar person={other} size={34} />
+            <div className="row-main">
+              <div className="row-title">{other.display_name}</div>
+              <div className="row-sub">Shares expenses with you</div>
+            </div>
+          </div>
+        )}
+
+        <div className="pad">
+          <button className="btn danger" onClick={signOut}>
+            <Icon name="person" size={16} width={2} />
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      <div className="tabbar">
+        <button onClick={() => setView({ name: 'home' })}><Icon name="list" /><span>Expenses</span></button>
+        <button onClick={() => setView({ name: 'summary' })}><Icon name="chart" /><span>Totals</span></button>
+        <button className="on"><Icon name="person" /><span>Account</span></button>
       </div>
     </div>
   )
