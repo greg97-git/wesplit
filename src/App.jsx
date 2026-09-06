@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { configured } from './supabase.js'
+import { pushSupported, getPushSubscription, enablePush, disablePush } from './push.js'
 import {
   useSession, useAppData, sendMagicLink, verifyCode, signOut,
   createExpense, updateExpense, deleteExpense, createSettlement,
@@ -1130,6 +1131,35 @@ function SummaryScreen({ ctx }) {
 
 function AccountScreen({ ctx }) {
   const { me, other, session, setView } = ctx
+  // 'checking' while we ask the service worker, then 'on' | 'off' | 'unsupported'.
+  const [pushState, setPushState] = useState('checking')
+  const [pushError, setPushError] = useState(null)
+
+  useEffect(() => {
+    if (!pushSupported) {
+      setPushState('unsupported')
+      return
+    }
+    getPushSubscription().then((sub) => setPushState(sub ? 'on' : 'off'))
+  }, [])
+
+  async function togglePush() {
+    setPushError(null)
+    if (pushState === 'on') {
+      setPushState('checking')
+      await disablePush()
+      setPushState('off')
+      return
+    }
+    setPushState('checking')
+    try {
+      await enablePush(me.id)
+      setPushState('on')
+    } catch (err) {
+      setPushError(err.message)
+      setPushState('off')
+    }
+  }
 
   return (
     <div className="app">
@@ -1151,6 +1181,18 @@ function AccountScreen({ ctx }) {
               <div className="row-title">{other.display_name}</div>
               <div className="row-sub">Shares expenses with you</div>
             </div>
+          </div>
+        )}
+
+        {pushState !== 'unsupported' && (
+          <div className="pad">
+            <button className="btn ghost" onClick={togglePush} disabled={pushState === 'checking'}>
+              <Icon name="bell" size={16} width={2} />
+              {pushState === 'on' ? 'Turn off expense notifications' : 'Notify me when an expense is added'}
+            </button>
+            {pushError && (
+              <div className="muted small" style={{ marginTop: 6 }}>{pushError}</div>
+            )}
           </div>
         )}
 

@@ -33,6 +33,7 @@ const paths = {
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
   split: <><path d="M12 3v18" /><circle cx="7" cy="8" r="3" /><circle cx="17" cy="16" r="3" /></>,
   mail: <><rect x="2" y="5" width="20" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></>,
+  bell: <><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></>,
 }
 
 export function Icon({ name, size = 20, color = 'currentColor', width = 1.8, style }) {
@@ -56,15 +57,27 @@ export function Icon({ name, size = 20, color = 'currentColor', width = 1.8, sty
   )
 }
 
-// Category glyphs. Text rather than SVG so adding a category in SQL needs no
-// code change; anything unrecognised falls back to a receipt.
+// Category glyphs, each paired with a tint that plays off the emoji's own
+// colours. Text rather than SVG so adding a category in SQL needs no code
+// change; anything unrecognised falls back to a receipt.
 const categoryGlyph = {
-  cart: '🛒', home: '🏠', bolt: '💡', fork: '🍽', car: '🚗', plane: '✈️',
-  paw: '🐾', heart: '💊', box: '📦', ticket: '🎟', receipt: '🧾', card: '💳',
+  cart: { emoji: '🛒', bg: '#e3f5ec' },
+  home: { emoji: '🏠', bg: '#fdf1dd' },
+  bolt: { emoji: '💡', bg: '#fef7d6' },
+  fork: { emoji: '🍽', bg: '#fdece2' },
+  car: { emoji: '🚗', bg: '#e3eefc' },
+  plane: { emoji: '✈️', bg: '#e0f5f2' },
+  paw: { emoji: '🐾', bg: '#f6ece0' },
+  heart: { emoji: '💊', bg: '#fde7ea' },
+  box: { emoji: '📦', bg: '#f2eafb' },
+  ticket: { emoji: '🎟', bg: '#f8e8f5' },
+  receipt: { emoji: '🧾', bg: '#eeeeee' },
+  card: { emoji: '💳', bg: '#e9e9f9' },
 }
 
 export function CategoryTile({ icon }) {
-  return <div className="tile">{categoryGlyph[icon] ?? categoryGlyph.receipt}</div>
+  const { emoji, bg } = categoryGlyph[icon] ?? categoryGlyph.receipt
+  return <div className="tile" style={{ background: bg }}>{emoji}</div>
 }
 
 export function Avatar({ person, size = 40 }) {

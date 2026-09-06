@@ -23,6 +23,12 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // A hand-written service worker (src/sw.js) so it can also handle Web
+      // Push -- generateSW's auto-built worker has no room for a custom
+      // 'push' event listener.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
       registerType: 'autoUpdate',
       // We register by hand in main.jsx so we can force update checks.
       injectRegister: null,
@@ -42,11 +48,6 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
-      },
-      workbox: {
-        // Never cache Supabase responses. The network is the source of truth.
-        navigateFallbackDenylist: [/^\/api/],
-        runtimeCaching: [],
       },
     }),
   ],
