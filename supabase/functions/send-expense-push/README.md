@@ -6,15 +6,29 @@ plus one CLI deploy.
 
 ## 1. VAPID keys
 
-Already generated (P-256 keypair), so there's nothing to run for this step:
+The public half is already baked into `src/push.js`
+(`BLqczVZkgtYqVCWSFzOzVjXLm64HUFdVASKo0OdlpCD2x5CQFceoQxmDbyNF2D_lJu5BCLTn3SbwdpZVXaGG5S8`)
+-- that one is meant to be public, the same way the Supabase anon key is.
+
+The matching private key was generated for you in chat, not written to any
+file in this repo (this is a public repo -- anything committed here is
+world-readable, so a private key has no business living in it). Grab it from
+that message and paste it directly into the `supabase secrets set` command
+below. If you've lost it, just generate a new pair and update the public key
+above and in `src/push.js` to match:
 
 ```
-VAPID_PUBLIC_KEY  = BF75wu5iX0ytdgBMkxfT97o4RA8tFagcIP9t_r_BBXYedE1THkvEnpKAGRDzpu6M0eSwXXzkUFqC0h_Hgnkq4DQ
-VAPID_PRIVATE_KEY = 6bnfugDqVL0JOaXnsTkS8LrPDtqaub8SsJ8eXDZwKRs
+node -e "
+const crypto = require('crypto');
+const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+const pub = publicKey.export({ type: 'spki', format: 'der' });
+const pubPoint = pub.subarray(pub.length - 65);
+const jwkPriv = privateKey.export({ format: 'jwk' });
+const b64url = (buf) => Buffer.from(buf).toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+\$/,'');
+console.log('PUBLIC:', b64url(pubPoint));
+console.log('PRIVATE:', jwkPriv.d);
+"
 ```
-
-The public half is already baked into `src/push.js`. Keep the private half
-secret -- it's what lets the Edge Function sign messages as this app.
 
 ## 2. Run the migration
 
@@ -35,8 +49,8 @@ user.
 ## 4. Set the function's secrets
 
 ```
-supabase secrets set VAPID_PUBLIC_KEY=BF75wu5iX0ytdgBMkxfT97o4RA8tFagcIP9t_r_BBXYedE1THkvEnpKAGRDzpu6M0eSwXXzkUFqC0h_Hgnkq4DQ
-supabase secrets set VAPID_PRIVATE_KEY=6bnfugDqVL0JOaXnsTkS8LrPDtqaub8SsJ8eXDZwKRs
+supabase secrets set VAPID_PUBLIC_KEY=BLqczVZkgtYqVCWSFzOzVjXLm64HUFdVASKo0OdlpCD2x5CQFceoQxmDbyNF2D_lJu5BCLTn3SbwdpZVXaGG5S8
+supabase secrets set VAPID_PRIVATE_KEY=<paste the private key here -- never commit it>
 supabase secrets set VAPID_SUBJECT=mailto:you@yourdomain.com
 ```
 
