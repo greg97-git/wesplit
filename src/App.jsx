@@ -1185,15 +1185,32 @@ function AccountScreen({ ctx }) {
         )}
 
         {pushState !== 'unsupported' && (
-          <div className="pad">
-            <button className="btn ghost" onClick={togglePush} disabled={pushState === 'checking'}>
-              <Icon name="bell" size={16} width={2} />
-              {pushState === 'on' ? 'Turn off expense notifications' : 'Notify me when an expense is added'}
-            </button>
+          <>
+            <div className="row">
+              <Icon name="bell" size={18} width={2} />
+              <div className="row-main">
+                <div className="row-title">Expense notifications</div>
+                <div className="row-sub">
+                  {other ? `Get notified when ${other.display_name} adds an expense` : 'Get notified when an expense is added'}
+                </div>
+              </div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={pushState === 'on'}
+                  disabled={pushState === 'checking'}
+                  onChange={togglePush}
+                />
+                <span className="switch-track" />
+                <span className="switch-thumb" />
+              </label>
+            </div>
             {pushError && (
-              <div className="muted small" style={{ marginTop: 6 }}>{pushError}</div>
+              <div className="pad" style={{ paddingTop: 0 }}>
+                <div className="muted small">{pushError}</div>
+              </div>
             )}
-          </div>
+          </>
         )}
 
         <div className="pad">
@@ -1201,6 +1218,10 @@ function AccountScreen({ ctx }) {
             <Icon name="person" size={16} width={2} />
             Sign out
           </button>
+        </div>
+
+        <div className="muted small" style={{ textAlign: 'center', padding: '4px 16px 20px', opacity: 0.6 }}>
+          build {__BUILD__}
         </div>
       </div>
 
