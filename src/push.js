@@ -4,7 +4,7 @@ import { supabase } from './supabase.js'
 // meaningless without the private key held by the send-expense-push Edge
 // Function. Regenerate both together if this ever needs to change.
 const VAPID_PUBLIC_KEY =
-  'BF75wu5iX0ytdgBMkxfT97o4RA8tFagcIP9t_r_BBXYedE1THkvEnpKAGRDzpu6M0eSwXXzkUFqC0h_Hgnkq4DQ'
+  'BLqczVZkgtYqVCWSFzOzVjXLm64HUFdVASKo0OdlpCD2x5CQFceoQxmDbyNF2D_lJu5BCLTn3SbwdpZVXaGG5S8'
 
 export const pushSupported =
   typeof window !== 'undefined' &&
