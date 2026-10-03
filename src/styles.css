@@ -199,3 +199,8 @@ input, select, textarea { font: inherit; color: inherit; }
   justify-content: center; gap: 3px; color: var(--faint); font-size: 10px;
 }
 .tabbar button.on { color: var(--green); font-weight: 600; }
+
+.older-toggle {
+  display: block; width: 100%; padding: 14px 16px; text-align: center;
+  font-size: 14px; font-weight: 500; color: var(--green);
+}

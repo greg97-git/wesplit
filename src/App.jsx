@@ -238,21 +238,28 @@ function HomeScreen({ ctx }) {
   const { me, other, expenses, settlements, categories, balances, setView } = ctx
   const net = netFor(balances, me.id)
 
-  const items = useMemo(() => {
+  const [showOlder, setShowOlder] = useState(false)
+
+  const { items, hiddenCount } = useMemo(() => {
     const merged = [
       ...expenses.map((e) => ({ kind: 'expense', date: e.spent_on, created: e.created_at, data: e })),
       ...settlements.map((s) => ({ kind: 'settlement', date: s.settled_on, created: s.created_at, data: s })),
     ]
     merged.sort((a, b) => (a.date === b.date ? b.created.localeCompare(a.created) : b.date.localeCompare(a.date)))
 
+    // Everything older than the most recent settlement is collapsed by default.
+    const lastSettled = merged.findIndex((i) => i.kind === 'settlement')
+    const hiddenCount = lastSettled === -1 || showOlder ? 0 : merged.length - lastSettled - 1
+    const visible = hiddenCount ? merged.slice(0, lastSettled + 1) : merged
+
     const groups = []
-    for (const item of merged) {
+    for (const item of visible) {
       const key = monthKey(item.date)
       if (!groups.length || groups[groups.length - 1].key !== key) groups.push({ key, items: [] })
       groups[groups.length - 1].items.push(item)
     }
-    return groups
-  }, [expenses, settlements])
+    return { items: groups, hiddenCount }
+  }, [expenses, settlements, showOlder])
 
   return (
     <div className="app">
@@ -314,6 +321,11 @@ function HomeScreen({ ctx }) {
             )}
           </div>
         ))}
+        {(hiddenCount > 0 || showOlder) && (
+          <button className="older-toggle" onClick={() => setShowOlder((v) => !v)}>
+            {showOlder ? 'Hide earlier entries' : `Show ${hiddenCount} earlier ${hiddenCount === 1 ? 'entry' : 'entries'}`}
+          </button>
+        )}
       </div>
 
       <div className="fab-wrap">
